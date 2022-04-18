@@ -32,16 +32,7 @@ export class InMemoryEventsRepository implements EventsRepository {
 
     async getAllEvents(): Promise<Array<EventModel>> {
         return Array.from(this.state.values())
-            .map(value => new EventModel(
-                    value.title,
-                    new Date(value.date.getDate()),
-                    new CityModel(
-                        value.city.name,
-                        value.city.postCode,
-                        value.city.country
-                    )
-                )
-            );
+            .map(value => this.copyEvent(value));
     }
 
     async getEvent(id: number): Promise<EventModel | null> {
@@ -50,15 +41,7 @@ export class InMemoryEventsRepository implements EventsRepository {
         }
 
         let event = this.state.get(id);
-        return new EventModel(
-            event.title,
-            new Date(event.date.getDate()),
-            new CityModel(
-                event.city.name,
-                event.city.postCode,
-                event.city.country
-            )
-        );
+        return this.copyEvent(event);
     }
 
     async updateEvent(id: number, title: string, date: Date, city: CityModel): Promise<boolean> {
@@ -76,5 +59,18 @@ export class InMemoryEventsRepository implements EventsRepository {
             )
         ));
     }
+
+    private copyEvent(model: EventModel): EventModel {
+        return new EventModel(
+            model.title,
+            new Date(model.date.getDate()),
+            new CityModel(
+                model.city.name,
+                model.city.postCode,
+                model.city.country
+            )
+        );
+    }
+
 
 }

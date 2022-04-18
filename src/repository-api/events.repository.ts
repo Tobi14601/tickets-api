@@ -6,7 +6,7 @@ export interface EventsRepository {
     /**
      * Load all Events.
      *
-     * @return Immutable copy of all events
+     * @return A copy of all events
      */
     getAllEvents(): Promise<Array<EventModel>>;
 
