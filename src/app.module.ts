@@ -5,6 +5,7 @@ import {TicketsController} from "./controller/tickets.controller";
 import {InMemoryEventsRepository} from "./repository-in-memory/in.memory.events.repository";
 import {InMemoryTicketsRepository} from "./repository-in-memory/in.memory.tickets.repository";
 import {EventsServiceImpl} from "./service-impl/events.service.impl";
+import {TicketsServiceImpl} from "./service-impl/tickets.service.impl";
 
 @Module({
   imports: [],
@@ -24,6 +25,10 @@ import {EventsServiceImpl} from "./service-impl/events.service.impl";
       {
           provide: "EventsService",
           useClass: EventsServiceImpl
+      },
+      {
+          provide: "TicketsService",
+          useClass: TicketsServiceImpl
       },
   ],
 })
