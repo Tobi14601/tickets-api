@@ -19,5 +19,9 @@ export class EventChangeDto {
     @ValidateNested()
     readonly city: CityDto;
 
-
+    constructor(title: string, date: Date, city: CityDto) {
+        this.title = title;
+        this.date = date;
+        this.city = city;
+    }
 }
