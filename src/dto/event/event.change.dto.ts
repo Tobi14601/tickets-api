@@ -1,12 +1,12 @@
 import {CityDto} from "../city.dto";
-import {IsDate, IsDefined, IsNotEmpty, IsString, ValidateNested} from "class-validator";
+import {IsDate, IsDefined, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, ValidateNested} from "class-validator";
 import {Type} from "class-transformer";
 
-export class EventCreateDto {
+export class EventChangeDto {
 
     @IsNotEmpty()
     @IsString()
-    readonly title: String;
+    readonly title: string;
 
     @Type(() => Date)
     @IsDate()
@@ -15,6 +15,7 @@ export class EventCreateDto {
 
     @IsDefined()
     @Type(() => CityDto)
+    @IsObject()
     @ValidateNested()
     readonly city: CityDto;
 

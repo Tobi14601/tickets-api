@@ -3,6 +3,16 @@ import {TicketModel} from "./model/TicketModel";
 export interface TicketsRepository {
 
     /**
+     * Load all tickets for the given eventIds.
+     *
+     * @param eventIds to load the tickets for
+     * @return A copy of all tickets for the event
+     *
+     * @returns An empty array when event does not exist or no tickets are created for the event.
+     */
+    getAllTicketsForEvents(eventIds: Set<number>): Promise<Map<number, Array<TicketModel>>>;
+
+    /**
      * Load all tickets for the given eventId.
      *
      * @param eventId to load the tickets for
@@ -83,5 +93,12 @@ export interface TicketsRepository {
      * @return True when delete was performed successfully
      */
     deleteTicket(eventId: number, ticketId: number): Promise<boolean>;
+
+    /**
+     * Deletes all tickets for the given eventId.
+     *
+     * @param eventId to delete all tickets for
+     */
+    deleteAllTicketsForEvent(eventId: number): Promise<void>;
 
 }

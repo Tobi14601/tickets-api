@@ -1,103 +1,112 @@
-import {Body, Controller, Delete, Get, Param, ParseIntPipe, Patch, Post, Put, Query} from "@nestjs/common";
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpException,
+    HttpStatus,
+    Inject,
+    Param,
+    ParseIntPipe,
+    Patch,
+    Post,
+    Put,
+    Query
+} from "@nestjs/common";
 import {EventOverviewDto} from "../dto/event/event.overview.dto";
-import {CityDto} from "../dto/city.dto";
-import {EventCreateDto} from "../dto/event/event.create.dto";
+import {EventChangeDto} from "../dto/event/event.change.dto";
 import {EventChangeResultDto} from "../dto/event/event.change.result.dto";
 import {EventDetailsDto} from "../dto/event/event.details.dto";
 import {TicketDto} from "../dto/ticket.dto";
 import {EventEntryResultDto} from "../dto/event/event.entry.result.dto";
-import {Matches} from "class-validator";
 import {EventEntryDto} from "../dto/event/event.entry.dto";
+import {EventsService} from "../service-api/events.service";
+import {EventUpdateResult} from "../service-api/model/event.update.result";
+import {EventEntryResult} from "../service-api/model/event.entry.result.model";
 
 @Controller()
 export class EventsController {
 
+    constructor(
+        @Inject("EventsService") readonly eventsService: EventsService,
+    ) {
+    }
+
     @Get("/events")
-    getEvents(): Array<EventOverviewDto> {
-        console.log("Get Events");
-        return [
-            new EventOverviewDto(
-                123,
-                "Test",
-                new Date(),
-                new CityDto(
-                    "Schweinfurt",
-                    "97421",
-                    "DE"
-                ),
-                123
-            )
-        ];
+    async getEvents(): Promise<Array<EventOverviewDto>> {
+        let allEvents = await this.eventsService.getAllEvents();
+        return allEvents.map(e => EventOverviewDto.fromEventTicketsModel(e));
     }
 
     @Post("/event")
-    createEvent(@Body() event: EventCreateDto): EventChangeResultDto {
-        console.log("Create Event");
-        console.log(event);
-        return new EventChangeResultDto(123);
+    async createEvent(@Body() event: EventChangeDto): Promise<EventChangeResultDto> {
+        if (new Date(event.date).setUTCHours(0, 0, 0, 0) < new Date().setUTCHours(0, 0, 0, 0)) {
+            throw new HttpException("Invalid date provided. It must be >= current date", HttpStatus.BAD_REQUEST);
+        }
+
+        let eventId = await this.eventsService.createEvent(event.title, event.date, event.city.toCityModel());
+
+        if (!eventId) {
+            throw new Error("Unable to create event");
+        }
+
+        return new EventChangeResultDto(eventId);
     }
 
     @Put("/event/:eventId")
-    updateEvent(
+    async updateEvent(
         @Param("eventId", ParseIntPipe) eventId: number,
-        @Body() event: EventCreateDto
-    ): EventChangeResultDto {
-        console.log("Update Event");
-        console.log(eventId);
-        console.log(event);
-        return new EventChangeResultDto(456);
+        @Body() event: EventChangeDto
+    ): Promise<EventChangeResultDto> {
+        let result = await this.eventsService.updateEvent(eventId, event.title, event.date, event.city.toCityModel());
+        if (result == EventUpdateResult.NOT_FOUND) {
+            throw new HttpException(`No event with id ${eventId} found`, HttpStatus.NOT_FOUND);
+        }
+
+        if (result != EventUpdateResult.SUCCESS) {
+            throw new Error("Unable to update event");
+        }
+
+        return new EventChangeResultDto(eventId);
     }
 
     @Get("/event/:eventId")
-    getEventDetails(@Param("eventId", ParseIntPipe) eventId: number): EventDetailsDto {
-        console.log("Get Event");
-        console.log(eventId);
-        return new EventDetailsDto(123,
-            "Test",
-            new Date(),
-            new CityDto(
-                "Schweinfurt",
-                "97421",
-                "DE"
-            ),
-            [
-                new TicketDto(
-                    456,
-                    "12345678",
-                    "Tobias",
-                    "Elflein",
-                    true,
-                    null
-                )
-            ],
-        );
+    async getEventDetails(@Param("eventId", ParseIntPipe) eventId: number): Promise<EventDetailsDto> {
+        let result = await this.eventsService.getEventById(eventId);
+        if (!result) {
+            throw new HttpException(`No event with id ${eventId} found`, HttpStatus.NOT_FOUND);
+        }
+
+        return EventDetailsDto.fromEventTicketsModel(result);
     }
 
     @Delete("/event/:eventId")
-    deleteEvent(@Param("eventId", ParseIntPipe) eventId: number): EventChangeResultDto {
-        console.log("Delete Event");
-        console.log(eventId);
-        return new EventChangeResultDto(100);
+    async deleteEvent(@Param("eventId", ParseIntPipe) eventId: number): Promise<EventChangeResultDto> {
+        let result = await this.eventsService.deleteEvent(eventId);
+        if (result == EventUpdateResult.NOT_FOUND) {
+            throw new HttpException(`No event with id ${eventId} found`, HttpStatus.NOT_FOUND);
+        }
+
+        if (result != EventUpdateResult.SUCCESS) {
+            throw new Error("Unable to delete event");
+        }
+
+        return new EventChangeResultDto(eventId);
     }
 
     @Patch("/event/:eventId/entry")
-    eventEntry(
+    async eventEntry(
         @Param("eventId", ParseIntPipe) eventId: number,
         @Query() {barcode}: EventEntryDto,
-    ): EventEntryResultDto {
-        console.log("Event Entry")
-        console.log(eventId);
-        console.log(barcode);
+    ): Promise<EventEntryResultDto> {
+        let result = await this.eventsService.eventEntry(eventId, barcode);
+        if (result.result == EventEntryResult.DENY_EVENT_NOT_FOUND) {
+            throw new HttpException(`No event with id ${eventId} found`, HttpStatus.NOT_FOUND);
+        }
+
         return new EventEntryResultDto(
-            true,
-            new TicketDto(
-                123,
-                "Hallo",
-                "Tobias",
-                "Elflein",
-                true,
-                null
-            ),
+            result.result,
+            result.ticket ? TicketDto.fromTicketModel(result.ticket) : null
         );
     }
 

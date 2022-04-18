@@ -1,4 +1,5 @@
 import {IsNotEmpty, IsString} from "class-validator";
+import {CityModel} from "../repository-api/model/city.model";
 
 export class CityDto {
 
@@ -20,5 +21,12 @@ export class CityDto {
         this.country = country;
     }
 
+    static fromCityModel(model: CityModel): CityDto {
+        return new CityDto(model.name, model.postCode, model.country);
+    }
+
+    toCityModel(): CityModel {
+        return new CityModel(this.name, this.postCode, this.country);
+    }
 
 }

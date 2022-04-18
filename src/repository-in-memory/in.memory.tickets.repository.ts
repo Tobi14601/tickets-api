@@ -1,7 +1,9 @@
 import {TicketsRepository} from "../repository-api/tickets.repository";
 import {TicketModel} from "../repository-api/model/TicketModel";
+import {Injectable} from "@nestjs/common";
 
-class InMemoryTicketsRepository implements TicketsRepository {
+@Injectable()
+export class InMemoryTicketsRepository implements TicketsRepository {
 
     private readonly state: Map<number, Map<number, TicketModel>> = new Map();
     private nextTicketId: number = 1;
@@ -33,13 +35,18 @@ class InMemoryTicketsRepository implements TicketsRepository {
         return true;
     }
 
-    async getAllTicketsForEvent(eventId: number): Promise<Array<TicketModel>> {
-        let eventState = this.state.get(eventId);
-        if (!eventState) {
-            return [];
-        }
+    async getAllTicketsForEvents(eventIds: Set<number>): Promise<Map<number, Array<TicketModel>>> {
+        let result = new Map<number, Array<TicketModel>>();
+        for (let eventId of eventIds) {
+            let eventState = this.state.get(eventId);
+            if (!eventState) {
+                result.set(eventId, []);
+                continue;
+            }
 
-        return Array.from(eventState.values()).map(value => this.copyTicket(value));
+            result.set(eventId, Array.from(eventState.values()).map(value => InMemoryTicketsRepository.copyTicket(value)));
+        }
+        return result;
     }
 
     async getTicketForEventFromBarcode(eventId: number, barcode: string): Promise<TicketModel | null> {
@@ -50,7 +57,7 @@ class InMemoryTicketsRepository implements TicketsRepository {
 
         for (let ticket of eventState.values()) {
             if (ticket.barcode === barcode) {
-                return this.copyTicket(ticket);
+                return InMemoryTicketsRepository.copyTicket(ticket);
             }
         }
 
@@ -67,7 +74,7 @@ class InMemoryTicketsRepository implements TicketsRepository {
             return null;
         }
 
-        return this.copyTicket(eventState.get(ticketId));
+        return InMemoryTicketsRepository.copyTicket(eventState.get(ticketId));
     }
 
     async updateTicketDetails(eventId: number, ticketId: number, barcode: string, firstName: string, lastName: string): Promise<boolean> {
@@ -94,20 +101,33 @@ class InMemoryTicketsRepository implements TicketsRepository {
             currentTicket.barcode,
             currentTicket.firstName,
             currentTicket.lastName,
-            usedDate ? new Date(usedDate.getDate()) : null)
+            usedDate ? new Date(usedDate) : null)
         );
 
         return true;
     }
 
-    private copyTicket(model: TicketModel): TicketModel {
+    private static copyTicket(model: TicketModel): TicketModel {
         return new TicketModel(
             model.id,
             model.barcode,
             model.firstName,
             model.lastName,
-            model.usedDate ? new Date(model.usedDate.getDate()) : null
+            model.usedDate ? new Date(model.usedDate) : null
         );
+    }
+
+    async deleteAllTicketsForEvent(eventId: number): Promise<void> {
+        this.state.delete(eventId);
+    }
+
+    async getAllTicketsForEvent(eventId: number): Promise<Array<TicketModel>> {
+        let eventState = this.state.get(eventId);
+        if (!eventState) {
+            return [];
+        }
+
+        return Array.from(eventState.values()).map(value => InMemoryTicketsRepository.copyTicket(value));
     }
 
 }
