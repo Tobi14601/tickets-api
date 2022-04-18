@@ -15,7 +15,7 @@ export interface EventsRepository {
      *
      * @return The EventModel for the event or null if it doesn't exist
      */
-    getEvent(id: number): Promise<EventModel | null | undefined>;
+    getEvent(id: number): Promise<EventModel | null>;
 
     /**
      * Create a new event and store it.

@@ -44,7 +44,7 @@ export class InMemoryEventsRepository implements EventsRepository {
             );
     }
 
-    async getEvent(id: number): Promise<EventModel | null | undefined> {
+    async getEvent(id: number): Promise<EventModel | null> {
         if (!this.state.has(id)) {
             return null;
         }
