@@ -8,7 +8,7 @@ import {EventsRepository} from "../repository-api/events.repository";
 import {Inject, Injectable} from "@nestjs/common";
 
 const ITERATION_LIMIT = 10_000;
-const GENERATED_TICKET_ID_LENGTH = 8;
+const GENERATED_TICKET_BARCODE_LENGTH = 8;
 
 @Injectable()
 export class TicketsServiceImpl implements TicketsService {
@@ -31,7 +31,7 @@ export class TicketsServiceImpl implements TicketsService {
         let iterations = 0;
         do {
             iterations++;
-            resultBarcode = barcode ?? TicketsServiceImpl.generateId(GENERATED_TICKET_ID_LENGTH);
+            resultBarcode = barcode ?? TicketsServiceImpl.generateId(GENERATED_TICKET_BARCODE_LENGTH);
             if (await this.ticketsRepository.getTicketForEventFromBarcode(eventId, resultBarcode)) {
                 continue;
             }
@@ -73,7 +73,7 @@ export class TicketsServiceImpl implements TicketsService {
         let iterations = 0;
         do {
             iterations++;
-            resultBarcode = barcode ?? TicketsServiceImpl.generateId(GENERATED_TICKET_ID_LENGTH);
+            resultBarcode = barcode ?? TicketsServiceImpl.generateId(GENERATED_TICKET_BARCODE_LENGTH);
             if (await this.ticketsRepository.getTicketForEventFromBarcode(eventId, resultBarcode)) {
                 continue;
             }
