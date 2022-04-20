@@ -33,6 +33,7 @@ export class TicketsServiceImpl implements TicketsService {
             iterations++;
             resultBarcode = barcode ?? TicketsServiceImpl.generateId(GENERATED_TICKET_BARCODE_LENGTH);
             if (await this.ticketsRepository.getTicketForEventFromBarcode(eventId, resultBarcode)) {
+                //Check if we already have a ticket with the same barcode
                 continue;
             }
             resultId = await this.ticketsRepository.createTicket(eventId, resultBarcode, firstName, lastName);
@@ -74,7 +75,9 @@ export class TicketsServiceImpl implements TicketsService {
         do {
             iterations++;
             resultBarcode = barcode ?? TicketsServiceImpl.generateId(GENERATED_TICKET_BARCODE_LENGTH);
-            if (await this.ticketsRepository.getTicketForEventFromBarcode(eventId, resultBarcode)) {
+            let existingTicket = await this.ticketsRepository.getTicketForEventFromBarcode(eventId, resultBarcode);
+            if (existingTicket && existingTicket.id != ticketId) {
+                //Check if we already have a ticket with this barcode, only allow in case it is the ticket we are updating
                 continue;
             }
             result = await this.ticketsRepository.updateTicketDetails(eventId, ticketId, resultBarcode, firstName, lastName);
