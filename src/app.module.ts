@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppService } from './app.service';
 import {EventsController} from "./controller/events.controller";
 import {TicketsController} from "./controller/tickets.controller";
 import {InMemoryEventsRepository} from "./repository-in-memory/in.memory.events.repository";
