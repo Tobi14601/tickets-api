@@ -1,5 +1,5 @@
 import {CityDto} from "../city.dto";
-import {IsDate, IsDefined, IsNotEmpty, IsNotEmptyObject, IsObject, IsString, ValidateNested} from "class-validator";
+import {IsDate, IsDefined, IsNotEmpty, IsObject, IsString, ValidateNested} from "class-validator";
 import {Type} from "class-transformer";
 
 export class EventChangeDto {

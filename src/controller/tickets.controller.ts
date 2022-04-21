@@ -69,7 +69,7 @@ export class TicketsController {
         @Param("ticketId", ParseIntPipe) ticketId: number,
         @Body() ticket: TicketChangeDto
     ): Promise<TicketChangeResultDto> {
-        let result = await this.ticketsService.updateTicket(eventId, ticketId, ticket.firstName, ticket.lastName,ticket.barcode.length > 0 ? ticket.barcode : null);
+        let result = await this.ticketsService.updateTicket(eventId, ticketId, ticket.firstName, ticket.lastName, ticket.barcode.length > 0 ? ticket.barcode : null);
 
         if (result.result == TicketUpdateResult.NOT_FOUND) {
             throw new HttpException(`No Ticket for event with id ${eventId} and id ${ticketId} found`, HttpStatus.NOT_FOUND);

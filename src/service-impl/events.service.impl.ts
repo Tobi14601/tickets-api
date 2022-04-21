@@ -55,7 +55,7 @@ export class EventsServiceImpl implements EventsService {
             );
         }
 
-        if (new Date().setUTCHours(0,0,0,0) !== new Date(event.date).setUTCHours(0,0,0,0)) {
+        if (new Date().setUTCHours(0, 0, 0, 0) !== new Date(event.date).setUTCHours(0, 0, 0, 0)) {
             return new EventEntryResultModel(
                 EventEntryResult.DENY_WRONG_DAY,
                 ticket
